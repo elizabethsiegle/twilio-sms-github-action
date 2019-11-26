@@ -1,31 +1,41 @@
 name: Node.js Package
-
+ 
 on:
-  release:
-    types: [created]
-
+ release:
+   types: [created]
+ 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - run: npm ci
-      - run: npm test
-
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://npm.pkg.github.com/
-          scope: '@dkundel'
-      - run: npm ci
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+ build:
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v1
+     - uses: actions/setup-node@v1
+       with:
+         node-version: 12
+     - run: npm ci
+     - run: npm test
+ 
+ publish-gpr:
+   needs: build
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v1
+     - uses: actions/setup-node@v1
+       with:
+         node-version: 12
+         registry-url: https://npm.pkg.github.com/
+         scope: '@elizabethsiegle'
+     - run: npm ci
+     - run: npm publish
+       env:
+         NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+     - name: 'Sending SMS Notification'
+       uses: twilio-labs/actions-sms@v1
+       with:
+         fromPhoneNumber: ${{ secrets.TWILIO_PHONE_NUMBER }}
+         toPhoneNumber: ${{ secrets.MY_PHONE_NUMBER }}
+         message: 'The latest version of your package has been shipped 🎉'
+       env:
+         TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+         TWILIO_API_KEY: ${{ secrets.TWILIO_API_KEY }}
+         TWILIO_API_SECRET: ${{ secrets.TWILIO_API_SECRET }}
